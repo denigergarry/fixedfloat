@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<head>
+<style>
+  html,
+body {
+    height: 100%;
+}
+
+a {
+    color: lighten(#ff145a, 10%);
+}
+
+h1,
+p,
+a,
+span,
+input,
+select,
+option {
+    font-family: 'Fira Sans', sans-serif;
+}
+
+$color-primary: #ff145a;
+$color-secondary: #1a1a1a;
+
+body {
+    transition: background 300ms;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $color-secondary;
+    background-repeat: no-repeat;
+    background-blend-mode: multiply;
+    background-position: center;
+    background-size: cover;
+    
+    &.BTC {
+        background-color: rgba(0,0,0,0.7);
+        background-image: url('https://steemit-production-imageproxy-upload.s3.amazonaws.com/DQmTCUD6ZfRE8PspR78pEgFHBGyet8VNqkajGvasbYGFjyN');
+    }
+    
+    &.ETH {
+        background-color: rgba(0, 0, 0, 0.7);
+        background-image: url('https://karl.tech/content/images/2016/04/ethereum-road-network.jpg');
+    }
+}
+
+.wrapper {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
+    
+    h1 {
+        margin-bottom: 10px;
+        color: $color-primary;
+    }
+    
+    form {
+        display: flex;
+        
+        input,
+        select {
+            border: 0;
+            background: $color-primary;
+            padding: 10px;
+            color: #fff;
+            
+            &:not(:last-child) {
+                margin-right: 10px;
+            }
+            
+            &:focus {
+                outline: 0;
+            }
+        }
+        
+        option {
+            
+            &:selected {
+                background: $color-secondary;
+            }
+            
+            &:checked {
+                background: $color-secondary;
+            }
+        }
+    }
+    
+    p,
+    span {
+        color: #fff;
+    }
+    
+    span {
+        margin-bottom: 50px;
+    }
+}
+
+</style>
+  <script>
+    const bodyEl = document.querySelector('body');
+const resultEl = document.querySelector('#result');
+const currencyFromSelect = document.querySelector('#currencyFrom');
+const amountFromInput = document.querySelector('#amountFrom');
+const currencyToSelect = document.querySelector('#currencyTo');
+
+let currencyFromValue = currencyFromSelect.value;
+let amountFromValue = amountFrom.value;
+let currencyToValue = currencyToSelect.value;
+
+currencyFromSelect.addEventListener('change', () => {
+    currencyFromValue = currencyFromSelect.value;
+    bodyEl.className = '';
+    bodyEl.classList.add(currencyFromSelect.value);
+    validate();
+});
+
+amountFromInput.addEventListener('change', () => {
+    amountFromValue = amountFromInput.value;
+    validate();
+});
+
+currencyToSelect.addEventListener('change', () => {
+    currencyToValue = currencyToSelect.value;
+    validate();
+});
+
+
+/**
+ * Check input values and submit or show message.
+ */
+function validate() {
+    if (
+        currencyFromValue !== '' &&
+        amountFromValue !== '' &&
+        currencyToValue !== ''
+    ) {
+        submit();
+    } else {
+        resultEl.innerText = 'Select some currencies and an amount to convert';
+    }
+}
+
+
+
+/**
+ * Multiplies two floats without losing precision.
+ */
+function multFloats(x, y) {
+    debugger;
+    if (String(x).length > 1 && String(y).length > 1) {
+        const xP = String(x).split('.')[1].length;
+        const yP = String(y).split('.')[1].length;
+        const _x = x * (Math.pow(10, xP));
+        const _y = y * (Math.pow(10, yP));  
+        return (_x * _y) / Math.pow(10, xP + yP);
+    } else {
+        return x * y;
+    }  
+}
+
+/**
+ * Setup variables with result info and do request.
+ */
+function submit() {
+    const url = 
+          `https://min-api.cryptocompare.com/data/price?fsym=${currencyFromValue}&tsyms=${currencyToValue}`;
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            const fromText = `${amountFromValue} ${currencyFromValue}`;
+            const inputAmount = parseFloat(amountFromValue);
+            const dataAmount = parseFloat(data[currencyToValue]);
+            const resultAmount = multFloats(inputAmount, dataAmount);
+            const toText = `${resultAmount} ${currencyToValue}`;
+            result.innerText = `${fromText} = ${toText}`;
+        })
+        .catch(err => {
+            console.error(err);
+        });
+}
+
+  </script>
+</head>
+
+<body>
+<div class="wrapper">
+    <h1>Cryptocurrency Converter</h1>
+    <span>This cryptocurrency converter was made with the <a href="https://cryptocompare.com/api">CryptoCompare API</a></span>
+
+    <form>
+        <select name="currencyFrom" id="currencyFrom">
+            <option value="">-- Select a currency --</option>
+            <option value="BTC">BTC</option>
+            <option value="ETH">ETH</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+        </select>
+        <input type="number" name="amountFrom" id="amountFrom">
+        <select name="currencyTo" id="currencyTo">
+            <option value="">-- Select a currency --</option>
+            <option value="USDT">USDT</option>
+            <option value="EUR">EUR</option>
+            <option value="BTC">BTC</option>
+            <option value="ETH">ETH</option>
+          <option value="LTC">LTC</option>
+           <option value="XMR">XMR</option>
+        </select>
+    </form>
+
+    <p id="result">Select some currencies and an amount to convert</p>
+</div>
+
+
+</body>
+</html>
